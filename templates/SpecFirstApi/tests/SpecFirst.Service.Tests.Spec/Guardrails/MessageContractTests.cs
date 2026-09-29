@@ -2,8 +2,6 @@ using System.Reflection;
 using System.Text.Json;
 using NJsonSchema;
 using NJsonSchema.Generation;
-using SpecFirst.Service.Messages;
-using SpecFirst.Service.Messages.Events;
 using YamlDotNet.Serialization;
 
 namespace SpecFirst.Service.Tests.Spec.Guardrails;

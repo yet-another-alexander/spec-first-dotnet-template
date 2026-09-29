@@ -1,5 +1,4 @@
 using DotNetCore.CAP;
-using SpecFirst.Service.Api.Persistence;
 
 namespace SpecFirst.Service.Api;
 

@@ -1,6 +1,3 @@
-using SpecFirst.Service.Api.Orders;
-using SpecFirst.Service.Models.Enums;
-
 namespace SpecFirst.Service.Tests.Unit.Orders;
 
 public sealed class OrderLifecycleTests

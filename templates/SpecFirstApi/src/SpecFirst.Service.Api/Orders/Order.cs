@@ -1,4 +1,3 @@
-using SpecFirst.Service.Models.Enums;
 using Stateless;
 
 namespace SpecFirst.Service.Api.Orders;

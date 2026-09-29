@@ -24,6 +24,17 @@
   <ItemGroup>
     <Using Include="Shouldly" />
     <Using Include="Xunit" />
+    <!-- The solution's own namespaces are global usings so that renaming the template never changes the
+         alphabetical order CSharpier enforces on the using directives in each file. -->
+    <Using Include="SpecFirst.Service.Api" />
+    <Using Include="SpecFirst.Service.Api.Orders" />
+    <Using Include="SpecFirst.Service.Api.Persistence" />
+    <Using Include="SpecFirst.Service.Messages" />
+    <Using Include="SpecFirst.Service.Messages.Events" />
+    <Using Include="SpecFirst.Service.Models.Enums" />
+    <Using Include="SpecFirst.Service.Models.Requests" />
+    <Using Include="SpecFirst.Service.Models.Responses" />
+    <Using Include="SpecFirst.Service.Tests.Spec.Integration" />
   </ItemGroup>
 
   <ItemGroup>

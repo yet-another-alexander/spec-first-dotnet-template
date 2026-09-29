@@ -1,6 +1,3 @@
-using SpecFirst.Service.Api;
-using SpecFirst.Service.Api.Orders;
-
 var builder = WebApplication.CreateBuilder(args);
 
 builder.Logging.AddJsonConsoleOutsideDevelopment(builder.Environment);

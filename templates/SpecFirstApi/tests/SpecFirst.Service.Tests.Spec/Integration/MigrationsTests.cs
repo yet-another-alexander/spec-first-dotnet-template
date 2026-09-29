@@ -1,6 +1,5 @@
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
-using SpecFirst.Service.Api.Persistence;
 
 namespace SpecFirst.Service.Tests.Spec.Integration;
 

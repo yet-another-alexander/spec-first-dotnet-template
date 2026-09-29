@@ -1,5 +1,4 @@
 using System.ComponentModel;
-using SpecFirst.Service.Models.Enums;
 
 namespace SpecFirst.Service.Models.Responses;
 

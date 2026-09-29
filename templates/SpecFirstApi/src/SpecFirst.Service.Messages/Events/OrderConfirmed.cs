@@ -1,5 +1,4 @@
 using System.ComponentModel;
-using SpecFirst.Service.Messages;
 
 namespace SpecFirst.Service.Messages.Events;
 

@@ -1,7 +1,5 @@
 using System.Reflection;
 using System.Text.Json.Serialization;
-using SpecFirst.Service.Messages.Events;
-using SpecFirst.Service.Models.Enums;
 
 namespace SpecFirst.Service.Tests.Spec.Guardrails;
 

@@ -1,6 +1,5 @@
 using System.Net;
 using System.Net.Http.Json;
-using SpecFirst.Service.Models.Requests;
 
 namespace SpecFirst.Service.Tests.Spec.Integration;
 

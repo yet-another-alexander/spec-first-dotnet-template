@@ -1,7 +1,6 @@
 using System.Collections.Concurrent;
 using System.Diagnostics;
 using DotNetCore.CAP;
-using SpecFirst.Service.Messages.Events;
 
 namespace SpecFirst.Service.Tests.Spec.Integration;
 

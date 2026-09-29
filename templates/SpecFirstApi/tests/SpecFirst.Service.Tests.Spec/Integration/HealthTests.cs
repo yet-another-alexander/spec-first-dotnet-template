@@ -1,5 +1,4 @@
 using System.Net;
-using SpecFirst.Service.Api;
 
 namespace SpecFirst.Service.Tests.Spec.Integration;
 

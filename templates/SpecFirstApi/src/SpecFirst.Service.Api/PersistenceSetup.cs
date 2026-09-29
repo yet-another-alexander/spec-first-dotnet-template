@@ -1,5 +1,4 @@
 using Microsoft.EntityFrameworkCore;
-using SpecFirst.Service.Api.Persistence;
 
 namespace SpecFirst.Service.Api;
 

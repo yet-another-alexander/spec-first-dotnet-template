@@ -9,4 +9,10 @@
   <ItemGroup>
     <ProjectReference Include="..\SpecFirst.Service.Models\SpecFirst.Service.Models.csproj" />
   </ItemGroup>
+
+  <ItemGroup>
+    <!-- The solution's own namespaces are global usings so that renaming the template never changes the
+         alphabetical order CSharpier enforces on the using directives in each file. -->
+    <Using Include="SpecFirst.Service.Messages" />
+  </ItemGroup>
 </Project>

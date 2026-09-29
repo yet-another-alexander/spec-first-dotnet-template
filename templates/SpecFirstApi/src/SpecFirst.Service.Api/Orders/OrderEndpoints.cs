@@ -1,11 +1,6 @@
 using System.ComponentModel;
 using DotNetCore.CAP;
 using Microsoft.EntityFrameworkCore;
-using SpecFirst.Service.Api.Persistence;
-using SpecFirst.Service.Messages.Events;
-using SpecFirst.Service.Models.Enums;
-using SpecFirst.Service.Models.Requests;
-using SpecFirst.Service.Models.Responses;
 
 namespace SpecFirst.Service.Api.Orders;
 

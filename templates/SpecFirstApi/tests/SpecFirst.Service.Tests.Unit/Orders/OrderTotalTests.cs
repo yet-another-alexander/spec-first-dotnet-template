@@ -1,5 +1,3 @@
-using SpecFirst.Service.Api.Orders;
-
 namespace SpecFirst.Service.Tests.Unit.Orders;
 
 public sealed class OrderTotalTests

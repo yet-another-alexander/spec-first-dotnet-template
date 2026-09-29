@@ -3,8 +3,6 @@ using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Mvc.Testing;
 using Microsoft.AspNetCore.TestHost;
 using Microsoft.Extensions.DependencyInjection;
-using SpecFirst.Service.Api;
-using SpecFirst.Service.Tests.Spec.Integration;
 using Testcontainers.PostgreSql;
 using Testcontainers.RabbitMq;
 
