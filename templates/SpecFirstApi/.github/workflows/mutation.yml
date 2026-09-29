@@ -1,0 +1,26 @@
+name: Mutation testing
+
+# Mutation testing catches tests that pass without asserting. Both test projects drive it, so the acceptance and
+# technical tests count, which needs Docker for the Postgres container. It is slow, so it runs weekly and on demand.
+# The run fails below thresholds.break in stryker-config.json; raise it as the domain grows.
+on:
+  schedule:
+    - cron: "0 6 * * 1"
+  workflow_dispatch:
+
+jobs:
+  stryker:
+    name: Stryker
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v7
+      - uses: actions/setup-dotnet@v6
+        with:
+          global-json-file: global.json
+      - run: dotnet tool restore
+      - run: dotnet stryker
+      - uses: actions/upload-artifact@v7
+        if: always()
+        with:
+          name: mutation-report
+          path: StrykerOutput

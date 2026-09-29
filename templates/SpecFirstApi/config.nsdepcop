@@ -1,0 +1,7 @@
+<NsDepCopConfig IsEnabled="true" CheckAssemblyDependencies="true" ChildCanDependOnParentImplicitly="false" MaxIssueCount="50">
+  <!-- Solution-wide dependency rules, checked at compile time. Every project has its own config.nsdepcop that inherits
+       this one (InheritanceDepth="2") and adds what that project may depend on.
+       Assemblies: anything outside the solution is allowed; an in-solution dependency is declared by the project that
+       takes it, so the contract projects can never pull in the service. Namespaces: nothing until a project allows it. -->
+  <AllowedAssembly From="*" To="/^(?!SpecFirst.Service.).*$/" />
+</NsDepCopConfig>

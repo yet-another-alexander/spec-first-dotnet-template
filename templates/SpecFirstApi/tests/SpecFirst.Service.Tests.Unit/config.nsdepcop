@@ -1,0 +1,8 @@
+<NsDepCopConfig InheritanceDepth="2">
+  <!-- Tests may use any namespace; the solution assemblies they reach for are listed. Messages arrives transitively
+       through the service reference, and the compiler sees it as a reference either way. -->
+  <Allowed From="*" To="*" />
+  <AllowedAssembly From="SpecFirst.Service.Tests.Unit" To="SpecFirst.Service.Api" />
+  <AllowedAssembly From="SpecFirst.Service.Tests.Unit" To="SpecFirst.Service.Models" />
+  <AllowedAssembly From="SpecFirst.Service.Tests.Unit" To="SpecFirst.Service.Messages" />
+</NsDepCopConfig>

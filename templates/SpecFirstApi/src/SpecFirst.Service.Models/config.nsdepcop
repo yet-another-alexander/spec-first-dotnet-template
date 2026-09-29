@@ -1,0 +1,6 @@
+<NsDepCopConfig InheritanceDepth="2">
+  <!-- The HTTP contracts are plain data: the BCL only, and no other project of the solution. -->
+  <Allowed From="SpecFirst.Service.Models.*" To="System" />
+  <Allowed From="SpecFirst.Service.Models.*" To="System.*" />
+  <Allowed From="SpecFirst.Service.Models.Responses" To="SpecFirst.Service.Models.Enums" />
+</NsDepCopConfig>

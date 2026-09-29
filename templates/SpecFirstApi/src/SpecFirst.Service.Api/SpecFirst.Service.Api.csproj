@@ -1,0 +1,43 @@
+<Project Sdk="Microsoft.NET.Sdk.Web">
+  <ItemGroup>
+    <ProjectReference Include="..\SpecFirst.Service.Messages\SpecFirst.Service.Messages.csproj" />
+    <ProjectReference Include="..\SpecFirst.Service.Models\SpecFirst.Service.Models.csproj" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <PackageReference Include="DotNetCore.CAP" />
+    <PackageReference Include="DotNetCore.CAP.PostgreSql" />
+    <PackageReference Include="DotNetCore.CAP.RabbitMQ" />
+    <PackageReference Include="EFCore.NamingConventions" />
+    <PackageReference Include="Microsoft.AspNetCore.OpenApi" />
+    <PackageReference Include="Microsoft.EntityFrameworkCore.Design">
+      <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
+      <PrivateAssets>all</PrivateAssets>
+    </PackageReference>
+    <PackageReference Include="Microsoft.Extensions.ApiDescription.Server">
+      <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
+      <PrivateAssets>all</PrivateAssets>
+    </PackageReference>
+    <PackageReference Include="Microsoft.Extensions.Diagnostics.HealthChecks.EntityFrameworkCore" />
+    <PackageReference Include="Npgsql.EntityFrameworkCore.PostgreSQL" />
+    <PackageReference Include="OpenTelemetry.Exporter.OpenTelemetryProtocol" />
+    <PackageReference Include="OpenTelemetry.Extensions.Hosting" />
+    <PackageReference Include="OpenTelemetry.Instrumentation.AspNetCore" />
+    <PackageReference Include="OpenTelemetry.Instrumentation.Http" />
+    <PackageReference Include="Scalar.AspNetCore" />
+    <PackageReference Include="Stateless" />
+  </ItemGroup>
+
+  <PropertyGroup>
+    <InvariantGlobalization>true</InvariantGlobalization>
+  </PropertyGroup>
+
+  <PropertyGroup>
+    <!-- Release builds write the OpenAPI document generated from code to /spec.json for the CI contract check.
+         The contract of record is docs/specs/api/openapi.yaml. -->
+    <OpenApiGenerateDocuments Condition="'$(Configuration)' != 'Release'"
+      >false</OpenApiGenerateDocuments>
+    <OpenApiDocumentsDirectory>$(MSBuildProjectDirectory)/../..</OpenApiDocumentsDirectory>
+    <OpenApiGenerateDocumentsOptions>--file-name spec --openapi-version OpenApi3_0</OpenApiGenerateDocumentsOptions>
+  </PropertyGroup>
+</Project>

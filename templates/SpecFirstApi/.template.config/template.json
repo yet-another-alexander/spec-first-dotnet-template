@@ -1,0 +1,85 @@
+{
+  "$schema": "http://json.schemastore.org/template",
+  "author": "Spec-First .NET Templates",
+  "classifications": ["Web", "API", "Spec-First"],
+  "identity": "SpecFirst.Api",
+  "groupIdentity": "SpecFirst.Api",
+  "name": "Spec-First ASP.NET Core API",
+  "shortName": "spec-first-api",
+  "description": "Lightweight ASP.NET Core minimal API with spec-first guardrails: EARS requirements with stable ids, requirement-to-test traceability, OpenAPI and database contract drift checks, a two-PR workflow and agent commands.",
+  "tags": {
+    "language": "C#",
+    "type": "solution"
+  },
+  "sourceName": "SpecFirst.Service",
+  "defaultName": "SpecFirst.Service",
+  "preferNameDirectory": true,
+  "primaryOutputs": [{ "path": "SpecFirst.Service.slnx" }],
+  "symbols": {
+    "kebabName": {
+      "type": "derived",
+      "valueSource": "name",
+      "valueTransform": "kebabCase",
+      "replaces": "specfirst-service",
+      "description": "Lower-case, dash-separated form of the name, used for the database, container and image names."
+    },
+    "skipRestore": {
+      "type": "parameter",
+      "datatype": "bool",
+      "defaultValue": "false",
+      "description": "If specified, skips the automatic restore of the solution on create."
+    }
+  },
+  "forms": {
+    "kebabCase": {
+      "identifier": "chain",
+      "steps": ["toLower", "dotsToDashes"]
+    },
+    "toLower": {
+      "identifier": "lowerCase"
+    },
+    "dotsToDashes": {
+      "identifier": "replace",
+      "pattern": "\\.",
+      "replacement": "-"
+    }
+  },
+  "sources": [
+    {
+      "modifiers": [
+        {
+          "exclude": [
+            "**/bin/**",
+            "**/obj/**",
+            "**/.idea/**",
+            "**/TestResults/**",
+            "**/StrykerOutput/**",
+            "**/coverage/**",
+            "**/node_modules/**",
+            "package-lock.json",
+            "**/*.feature.cs",
+            "spec.json",
+            "**/.DS_Store"
+          ]
+        }
+      ]
+    }
+  ],
+  "postActions": [
+    {
+      "condition": "(!skipRestore)",
+      "description": "Restore NuGet packages required by this solution.",
+      "manualInstructions": [{ "text": "Run 'dotnet restore'" }],
+      "actionId": "210D431B-A78B-4D2F-B762-4ED3E3EA9025",
+      "continueOnError": true
+    },
+    {
+      "condition": "(OS != \"Windows_NT\")",
+      "description": "Make the git hooks executable.",
+      "manualInstructions": [{ "text": "Run 'chmod +x .husky/pre-commit .husky/commit-msg'" }],
+      "actionId": "cb9a6cf3-4f5c-4860-b9d2-03a574959774",
+      "args": { "+x": ".husky/pre-commit .husky/commit-msg" },
+      "continueOnError": true
+    }
+  ]
+}

@@ -1,0 +1,8 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <!-- The synchronous contract: the request and response records and the wire enums of the HTTP API, nothing else.
+       BCL only, so any client can take the package; docs/specs/api/openapi.yaml is the contract of record. -->
+  <PropertyGroup>
+    <Description>Request and response contracts of the SpecFirst.Service HTTP API.</Description>
+    <GeneratePackageOnBuild>true</GeneratePackageOnBuild>
+  </PropertyGroup>
+</Project>

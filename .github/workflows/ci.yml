@@ -1,0 +1,68 @@
+name: Template
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+
+env:
+  DOTNET_NOLOGO: "true"
+  DOTNET_CLI_TELEMETRY_OPTOUT: "true"
+
+jobs:
+  instantiate:
+    name: Pack, instantiate and check
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v7
+      - uses: actions/setup-dotnet@v6
+        with:
+          global-json-file: global.json
+
+      - name: Pack the template
+        run: dotnet pack -c Release -o artifacts
+
+      - name: Install and instantiate under a different name
+        run: |
+          dotnet new install ./artifacts/*.nupkg
+          dotnet new spec-first-api -n Acme.Orders -o "$RUNNER_TEMP/acme"
+
+      - name: Formatting
+        working-directory: ${{ runner.temp }}/acme
+        run: |
+          dotnet tool restore
+          dotnet csharpier check .
+
+      - name: Build
+        working-directory: ${{ runner.temp }}/acme
+        run: dotnet build -c Release
+
+      - name: Tests (work in progress excluded)
+        working-directory: ${{ runner.temp }}/acme
+        run: dotnet test --no-build -c Release --filter "Category!=wip"
+
+      - name: Work-in-progress tests fail as expected
+        working-directory: ${{ runner.temp }}/acme
+        run: |
+          if dotnet test --no-build -c Release --filter "Category=wip"; then
+            echo "::error::The wip scenario passed; the template should ship it unimplemented."
+            exit 1
+          fi
+
+      - name: API contract lint
+        working-directory: ${{ runner.temp }}/acme
+        run: |
+          npm install
+          npm run lint:contracts
+
+      - name: API contract drift
+        working-directory: ${{ runner.temp }}/acme
+        run: |
+          docker run --rm -v "$PWD:/work:ro" tufin/oasdiff:v1.32.1 breaking \
+            /work/spec.json /work/docs/specs/api/openapi.yaml \
+            --fail-on WARN --severity-levels /work/.oasdiff-severity.txt
+
+      - uses: actions/upload-artifact@v7
+        with:
+          name: template-package
+          path: artifacts/*.nupkg

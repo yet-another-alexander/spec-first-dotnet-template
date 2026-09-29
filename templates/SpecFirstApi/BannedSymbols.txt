@@ -1,0 +1,9 @@
+# Forbidden APIs (Microsoft.CodeAnalysis.BannedApiAnalyzers, RS0030). One symbol per line: DocId;message.
+# Time is injected through TimeProvider so tests can control it and TECH requirements about time stay testable.
+P:System.DateTime.Now;Inject TimeProvider and call GetLocalNow()
+P:System.DateTime.UtcNow;Inject TimeProvider and call GetUtcNow()
+P:System.DateTime.Today;Inject TimeProvider
+P:System.DateTimeOffset.Now;Inject TimeProvider and call GetLocalNow()
+P:System.DateTimeOffset.UtcNow;Inject TimeProvider and call GetUtcNow()
+# A skipped test hides a requirement without coverage. Tag the scenario @wip or the fact [Trait("Category", "wip")] instead.
+P:Xunit.FactAttribute.Skip;Use @wip (feature file) or [Trait("Category", "wip")] instead of skipping a test

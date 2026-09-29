@@ -1,0 +1,14 @@
+bin/
+obj/
+*.nupkg
+.DS_Store
+.idea/
+.claude/rules/
+templates/**/bin/
+templates/**/obj/
+templates/**/TestResults/
+templates/**/*.feature.cs
+templates/**/spec.json
+templates/**/StrykerOutput/
+templates/**/node_modules/
+templates/**/package-lock.json

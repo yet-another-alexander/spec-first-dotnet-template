@@ -1,0 +1,20 @@
+<Project>
+  <!-- Installs the git hooks on first restore. Guarded on .git so it only runs from a real repository root,
+       never from a docker build context or the template pack. -->
+  <Target
+    Name="HuskyInstall"
+    BeforeTargets="Restore;CollectPackageReferences"
+    Condition="'$(HUSKY)' != 0 AND '$(MSBuildProjectName)' == 'SpecFirst.Service.Api' AND Exists('$(MSBuildThisFileDirectory).git')"
+  >
+    <Exec
+      Command="dotnet tool restore"
+      StandardOutputImportance="Low"
+      WorkingDirectory="$(MSBuildThisFileDirectory)"
+    />
+    <Exec
+      Command="dotnet husky install"
+      StandardOutputImportance="Low"
+      WorkingDirectory="$(MSBuildThisFileDirectory)"
+    />
+  </Target>
+</Project>

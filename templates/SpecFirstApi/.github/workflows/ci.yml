@@ -1,0 +1,215 @@
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+
+# A new push to a PR cancels the run it obsoleted; main runs are never cancelled.
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: ${{ github.event_name == 'pull_request' }}
+
+env:
+  DOTNET_NOLOGO: "true"
+  DOTNET_CLI_TELEMETRY_OPTOUT: "true"
+
+jobs:
+  format:
+    name: Formatting
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v7
+      - uses: actions/setup-dotnet@v6
+        with:
+          global-json-file: global.json
+      - run: dotnet tool restore
+      - run: dotnet csharpier check .
+
+  protected-paths:
+    name: Protected paths
+    # Spec PRs carry the label; everything else is an implementation PR.
+    if: github.event_name == 'pull_request' && !contains(github.event.pull_request.labels.*.name, 'spec')
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v7
+        with:
+          fetch-depth: 0
+      - name: Only wip markers may disappear from the spec and the spec tests
+        # An implementation PR may remove a line that is exactly `@wip` (feature file) or the
+        # `[Trait("Category", "wip")]` line of a fact, and nothing else. In particular it may not add a wip marker,
+        # which would hide a covered test from the run.
+        run: |
+          diff=$(git diff "origin/${{ github.base_ref }}...HEAD" -- docs/specs tests/SpecFirst.Service.Tests.Spec)
+          added=$(printf '%s\n' "$diff" | grep -E '^\+' | grep -vE '^\+\+\+ ' || true)
+          removed=$(printf '%s\n' "$diff" | grep -E '^-' | grep -vE '^--- ' \
+            | grep -vE '^-[[:space:]]*@wip[[:space:]]*$' \
+            | grep -vE '^-[[:space:]]*\[Trait\([[:space:]]*"Category"[[:space:]]*,[[:space:]]*"wip"[[:space:]]*\)\][[:space:]]*$' || true)
+          if [ -n "$added" ] || [ -n "$removed" ]; then
+            printf '%s\n' "$added" "$removed"
+            echo "::error::This pull request changes protected paths. Only a specification PR (label 'spec') may change docs/specs or the spec tests; an implementation PR may only delete @wip lines or wip trait lines."
+            exit 1
+          fi
+
+  contracts:
+    name: Contracts
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v7
+      - uses: actions/setup-dotnet@v6
+        with:
+          global-json-file: global.json
+
+      - name: Generate the OpenAPI document from code
+        run: dotnet build src/SpecFirst.Service.Api -c Release
+
+      - name: Lint the API and message contracts
+        # package.json pins Spectral and overrides @asyncapi/specs, which spectral-rulesets pulls in through an
+        # unpinned range and which had a malicious release in 2026. The same command runs locally.
+        run: |
+          npm install
+          npm run lint:contracts
+
+      - name: Everything the code exposes is declared in the API contract
+        # oasdiff breaking BASE REVISION reports what a client of BASE would lose in REVISION. With the generated
+        # document as BASE and the contract as REVISION, an endpoint, parameter or property that exists in code but not
+        # in the contract is a removal and fails. The other direction, contract ahead of code, is pending work and passes.
+        # oasdiff rates changes by what they break for a client, which is not quite the one-way element check we want, so
+        # .oasdiff-severity.txt (one "check-id level" per line, no comments allowed) adjusts it: request-side checks
+        # that fire when the contract is stricter than the code (a tightened bound, a new required property) are
+        # demoted to info, because contract ahead of code is pending work; removals that oasdiff rates informational
+        # (an enum value, an error status code, an operation id, an optional response property present in code but not
+        # in the contract) are promoted to error, because code ahead of contract is drift. The image is pinned so the
+        # list of check ids stays valid; regenerate the file when bumping it (see docs/workflow.md section 5).
+        run: |
+          docker run --rm -v "$PWD:/work:ro" tufin/oasdiff:v1.32.1 breaking \
+            /work/spec.json /work/docs/specs/api/openapi.yaml \
+            --fail-on WARN --severity-levels /work/.oasdiff-severity.txt
+
+  tests:
+    name: Tests
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v7
+      - uses: actions/setup-dotnet@v6
+        with:
+          global-json-file: global.json
+
+      - run: dotnet restore
+      - run: dotnet build --no-restore -c Release
+
+      - name: Tests (work in progress excluded)
+        run: >
+          dotnet test --no-build -c Release
+          --filter "Category!=wip"
+          --logger trx
+          --collect:"XPlat Code Coverage"
+          --settings coverage.runsettings
+          --results-directory ./coverage
+
+      - name: Work-in-progress tests that already pass
+        # A passing wip test means its @wip line can go in the implementation PR. Informational only.
+        run: >
+          dotnet test --no-build -c Release --filter "Category=wip" --logger "console;verbosity=normal" 2>&1
+          | grep -E "^[[:space:]]+Passed " || true
+
+      - name: Coverage summary
+        run: |
+          dotnet tool restore
+          dotnet reportgenerator \
+            -reports:"coverage/**/coverage.cobertura.xml" \
+            -targetdir:"coverage/report" \
+            "-reporttypes:MarkdownSummaryGithub;TextSummary;JsonSummary"
+          cat coverage/report/SummaryGithub.md >> "$GITHUB_STEP_SUMMARY"
+          cat coverage/report/Summary.txt
+
+      - name: Coverage gate
+        # Line coverage of the merged report over both test projects; coverage.runsettings says what is measured.
+        env:
+          MIN_LINE_COVERAGE: 90
+        run: |
+          actual=$(jq -r '.summary.linecoverage' coverage/report/Summary.json)
+          echo "Line coverage ${actual}% (minimum ${MIN_LINE_COVERAGE}%)"
+          if [ "$(echo "$actual < $MIN_LINE_COVERAGE" | bc -l)" -eq 1 ]; then
+            echo "::error::Line coverage ${actual}% is below the minimum of ${MIN_LINE_COVERAGE}%."
+            exit 1
+          fi
+
+      - uses: actions/upload-artifact@v7
+        with:
+          name: coverage-report
+          path: coverage/report
+
+  secrets:
+    name: Secrets
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v7
+        with:
+          fetch-depth: 0
+      - uses: gitleaks/gitleaks-action@v2
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          # Organisation repositories need a (free) license key: https://gitleaks.io
+          GITLEAKS_LICENSE: ${{ secrets.GITLEAKS_LICENSE }}
+
+  docker:
+    name: Container
+    # The push trigger only fires for main.
+    if: github.event_name == 'push'
+    needs: [format, contracts, tests]
+    runs-on: ubuntu-latest
+    services:
+      postgres:
+        image: postgres:18-alpine
+        env:
+          POSTGRES_DB: specfirst-service
+          POSTGRES_USER: postgres
+          POSTGRES_PASSWORD: postgres
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd "pg_isready -U postgres -d specfirst-service"
+          --health-interval 5s
+          --health-timeout 3s
+          --health-retries 5
+      rabbitmq:
+        image: rabbitmq:4-alpine
+        ports:
+          - 5672:5672
+        options: >-
+          --health-cmd "rabbitmq-diagnostics -q ping"
+          --health-interval 5s
+          --health-timeout 3s
+          --health-retries 10
+    steps:
+      - uses: actions/checkout@v7
+      - uses: docker/setup-buildx-action@v4
+      - name: Build image
+        uses: docker/build-push-action@v7
+        with:
+          context: .
+          push: false
+          load: true
+          tags: specfirst-service:ci
+          cache-from: type=gha
+          cache-to: type=gha,mode=max
+
+      - name: Smoke test
+        # TECH-004: the image starts, migrates, connects to the broker, answers /health and accepts an order.
+        run: |
+          docker run -d --name api --network host \
+            -e ConnectionStrings__Postgres="Host=localhost;Database=specfirst-service;Username=postgres;Password=postgres" \
+            -e RabbitMq__HostName=localhost \
+            specfirst-service:ci
+          ok=""
+          for _ in $(seq 30); do
+            if curl -fsS http://localhost:8080/health; then ok=1; break; fi
+            sleep 1
+          done
+          echo
+          docker logs api
+          [ -n "$ok" ]
+          curl -fsS -X POST http://localhost:8080/v1/orders \
+            -H 'content-type: application/json' \
+            -d '{"lines":[{"sku":"APPLE","quantity":1,"unitPrice":1.5}]}' | grep -q '"status":"submitted"'

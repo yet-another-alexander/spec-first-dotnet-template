@@ -1,0 +1,49 @@
+name: Stale work in progress
+
+# A spec element may stay ahead of the code only while its requirement is work in progress. This job lists every
+# wip marker in the spec tests with the age of the commit that added it and fails when one is older than the limit,
+# so a spec nobody implemented does not stay open forever.
+on:
+  schedule:
+    - cron: "0 6 * * *"
+  workflow_dispatch:
+
+env:
+  WIP_MAX_DAYS: 14
+
+jobs:
+  report:
+    name: Wip markers older than the limit
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v7
+        with:
+          fetch-depth: 0
+      - name: List wip markers with their age
+        run: |
+          now=$(date +%s)
+          report=$(
+            git ls-files 'tests/SpecFirst.Service.Tests.Spec/**/*.feature' 'tests/SpecFirst.Service.Tests.Spec/**/*.cs' \
+            | while read -r file; do
+                git blame --line-porcelain -- "$file" | awk -v file="$file" -v now="$now" '
+                  /^[0-9a-f]{40} / { line = $3 }
+                  /^committer-time / { t = $2 }
+                  /^\t/ {
+                    text = substr($0, 2)
+                    if (text ~ /^[[:space:]]*@wip[[:space:]]*$/ || text ~ /^[[:space:]]*\[Trait\([[:space:]]*"Category"[[:space:]]*,[[:space:]]*"wip"[[:space:]]*\)\][[:space:]]*$/)
+                      printf "%d\t%s:%d\n", int((now - t) / 86400), file, line
+                  }'
+              done | sort -rn
+          )
+          {
+            echo "## Work in progress (limit ${WIP_MAX_DAYS} days)"
+            echo
+            if [ -z "$report" ]; then echo "No wip markers."; else printf '| Age (days) | Marker |\n|---|---|\n'; printf '%s\n' "$report" | awk -F'\t' '{ printf "| %s | `%s` |\n", $1, $2 }'; fi
+          } >> "$GITHUB_STEP_SUMMARY"
+          printf '%s\n' "$report"
+          stale=$(printf '%s\n' "$report" | awk -F'\t' -v max="$WIP_MAX_DAYS" '$1 > max')
+          if [ -n "$stale" ]; then
+            echo "::error::Wip markers older than ${WIP_MAX_DAYS} days; implement the requirement or retire it:"
+            printf '%s\n' "$stale"
+            exit 1
+          fi

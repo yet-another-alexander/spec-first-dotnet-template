@@ -1,0 +1,10 @@
+<NsDepCopConfig InheritanceDepth="2">
+  <!-- The message contracts are plain data: the BCL, the topic attribute, and the wire enums of the Models project. -->
+  <AllowedAssembly From="SpecFirst.Service.Messages" To="SpecFirst.Service.Models" />
+  <Allowed From="SpecFirst.Service.Messages" To="System" />
+  <Allowed From="SpecFirst.Service.Messages" To="System.*" />
+  <Allowed From="SpecFirst.Service.Messages.*" To="System" />
+  <Allowed From="SpecFirst.Service.Messages.*" To="System.*" />
+  <Allowed From="SpecFirst.Service.Messages.*" To="SpecFirst.Service.Messages" />
+  <Allowed From="SpecFirst.Service.Messages.*" To="SpecFirst.Service.Models.Enums" />
+</NsDepCopConfig>

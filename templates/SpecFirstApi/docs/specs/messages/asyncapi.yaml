@@ -1,0 +1,54 @@
+# The message contract. Protected path: changed in spec PRs only.
+# CI generates a JSON Schema from every message type in code (the Messages project) and fails when a type, a property or a
+# topic in code is not declared here. Messages declared here with no type in code yet are pending work.
+asyncapi: 3.0.0
+info:
+  title: SpecFirst.Service events
+  version: v1
+  description: Messages the service publishes about orders.
+  contact:
+    name: SpecFirst.Service maintainers
+    url: https://example.com/spec-first-service
+  license:
+    name: Proprietary
+  tags:
+    - name: Orders
+      description: Lifecycle of orders
+channels:
+  orderConfirmed:
+    address: orders.confirmed
+    description: An order moved to status confirmed.
+    messages:
+      OrderConfirmed:
+        $ref: "#/components/messages/OrderConfirmed"
+operations:
+  sendOrderConfirmed:
+    action: send
+    channel:
+      $ref: "#/channels/orderConfirmed"
+    summary: Publish OrderConfirmed when an order is confirmed
+    description: Published once per order, in the same transaction as the status change (TECH-005, TECH-006).
+    messages:
+      - $ref: "#/channels/orderConfirmed/messages/OrderConfirmed"
+components:
+  messages:
+    OrderConfirmed:
+      name: OrderConfirmed
+      title: Order confirmed
+      summary: An order has been confirmed.
+      contentType: application/json
+      payload:
+        $ref: "#/components/schemas/OrderConfirmed"
+  schemas:
+    OrderConfirmed:
+      type: object
+      required: [orderId, confirmedAt]
+      properties:
+        orderId:
+          type: string
+          format: uuid
+          description: Identifier of the confirmed order.
+        confirmedAt:
+          type: string
+          format: date-time
+          description: When the order was confirmed, UTC.

@@ -1,0 +1,253 @@
+# The API contract. Protected path: changed in spec PRs only.
+# CI regenerates the document from code (spec.json) and fails when code exposes anything not declared here.
+# Operations declared here but not implemented yet are pending work, tracked by @wip scenarios.
+openapi: 3.0.4
+info:
+  title: SpecFirst.Service API
+  version: v1
+  description: Orders that clients submit, read, confirm and cancel.
+  contact:
+    name: SpecFirst.Service maintainers
+    url: https://example.com/spec-first-service
+  license:
+    name: Proprietary
+tags:
+  - name: Orders
+    description: Submitting, reading, confirming and cancelling orders
+paths:
+  /v1/orders:
+    post:
+      tags: [Orders]
+      summary: Submit a new order
+      description: Stores the order with status submitted and returns its representation.
+      operationId: submitOrder
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/SubmitOrderRequest"
+      responses:
+        "201":
+          description: Created
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/OrderResponse"
+        "400":
+          description: Bad Request
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/HttpValidationProblemDetails"
+  /v1/orders/{orderId}:
+    get:
+      tags: [Orders]
+      summary: Read an order
+      description: Returns the order with its lines, status and total.
+      operationId: getOrder
+      parameters:
+        - $ref: "#/components/parameters/OrderId"
+      responses:
+        "200":
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/OrderResponse"
+        "404":
+          description: Not Found
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/ProblemDetails"
+  /v1/orders/{orderId}/confirm:
+    post:
+      tags: [Orders]
+      summary: Confirm a submitted order
+      description: >-
+        Moves a submitted order to confirmed. Confirming an order that is already confirmed changes nothing; a cancelled
+        order cannot be confirmed.
+      operationId: confirmOrder
+      parameters:
+        - $ref: "#/components/parameters/OrderId"
+      responses:
+        "204":
+          description: No Content
+        "404":
+          description: Not Found
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/ProblemDetails"
+        "409":
+          description: Conflict, the order is cancelled
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/ProblemDetails"
+  /v1/orders/{orderId}/cancel:
+    post:
+      # REQ-008 to REQ-011, specified ahead of the implementation.
+      tags: [Orders]
+      summary: Cancel a submitted order
+      description: >-
+        Moves a submitted order to cancelled. Cancelling an order that is already cancelled changes nothing; a confirmed
+        order cannot be cancelled.
+      operationId: cancelOrder
+      parameters:
+        - $ref: "#/components/parameters/OrderId"
+      responses:
+        "204":
+          description: No Content
+        "404":
+          description: Not Found
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/ProblemDetails"
+        "409":
+          description: Conflict, the order is confirmed
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/ProblemDetails"
+components:
+  parameters:
+    OrderId:
+      name: orderId
+      in: path
+      description: Order identifier.
+      required: true
+      schema:
+        type: string
+        format: uuid
+  schemas:
+    SubmitOrderRequest:
+      type: object
+      required: [lines]
+      properties:
+        lines:
+          type: array
+          minItems: 1
+          description: Lines of the order; at least one.
+          items:
+            $ref: "#/components/schemas/OrderLineRequest"
+    OrderLineRequest:
+      type: object
+      required: [sku, quantity, unitPrice]
+      properties:
+        sku:
+          type: string
+          maxLength: 64
+          description: Stock keeping unit of the product.
+        quantity:
+          type: integer
+          format: int32
+          minimum: 1
+          maximum: 2147483647
+          description: Number of units; at least 1.
+        unitPrice:
+          type: number
+          format: double
+          minimum: 0
+          description: Price of one unit; zero or more.
+    OrderResponse:
+      type: object
+      required: [id, status, total, lines, createdAt]
+      properties:
+        id:
+          type: string
+          format: uuid
+          description: Order identifier.
+        status:
+          $ref: "#/components/schemas/OrderStatus"
+        total:
+          type: number
+          format: double
+          description: Sum of quantity multiplied by unit price over all lines.
+        lines:
+          type: array
+          description: Lines of the order in submission order.
+          items:
+            $ref: "#/components/schemas/OrderLineResponse"
+        createdAt:
+          type: string
+          format: date-time
+          description: When the order was submitted, UTC.
+    OrderLineResponse:
+      type: object
+      required: [sku, quantity, unitPrice]
+      properties:
+        sku:
+          type: string
+          description: Stock keeping unit of the product.
+        quantity:
+          type: integer
+          format: int32
+          description: Number of units.
+        unitPrice:
+          type: number
+          format: double
+          description: Price of one unit.
+    OrderStatus:
+      type: string
+      description: Lifecycle status of an order.
+      enum: [submitted, confirmed, cancelled]
+    ProblemDetails:
+      type: object
+      description: RFC 9457 problem details.
+      properties:
+        type:
+          type: string
+          nullable: true
+          description: URI reference identifying the problem type.
+        title:
+          type: string
+          nullable: true
+          description: Short, human-readable summary of the problem type.
+        status:
+          type: integer
+          format: int32
+          nullable: true
+          description: HTTP status code.
+        detail:
+          type: string
+          nullable: true
+          description: Human-readable explanation specific to this occurrence.
+        instance:
+          type: string
+          nullable: true
+          description: URI reference identifying this occurrence.
+    HttpValidationProblemDetails:
+      type: object
+      description: Problem details with the validation errors per field.
+      properties:
+        type:
+          type: string
+          nullable: true
+          description: URI reference identifying the problem type.
+        title:
+          type: string
+          nullable: true
+          description: Short, human-readable summary of the problem type.
+        status:
+          type: integer
+          format: int32
+          nullable: true
+          description: HTTP status code.
+        detail:
+          type: string
+          nullable: true
+          description: Human-readable explanation specific to this occurrence.
+        instance:
+          type: string
+          nullable: true
+          description: URI reference identifying this occurrence.
+        errors:
+          type: object
+          description: Validation errors keyed by field.
+          additionalProperties:
+            type: array
+            items:
+              type: string

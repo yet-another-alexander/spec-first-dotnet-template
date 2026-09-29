@@ -1,0 +1,28 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <PropertyGroup>
+    <PackageType>Template</PackageType>
+    <PackageId>SpecFirst.Templates.DotNet</PackageId>
+    <Version>0.1.0</Version>
+    <Title>Spec-First .NET Templates</Title>
+    <Authors>Alexander Ivanov</Authors>
+    <Description>A lightweight ASP.NET Core template for spec-first, agent-driven development: EARS requirements, requirement-to-test traceability, OpenAPI and database contract drift checks, a two-PR workflow and agent commands.</Description>
+    <PackageTags>dotnet-new;templates;spec-first;ears;traceability;openapi</PackageTags>
+    <PackageLicenseExpression>MIT</PackageLicenseExpression>
+    <TargetFramework>net10.0</TargetFramework>
+    <ContentTargetFolders>content</ContentTargetFolders>
+    <IncludeContentInPack>true</IncludeContentInPack>
+    <IncludeBuildOutput>false</IncludeBuildOutput>
+    <NoDefaultExcludes>true</NoDefaultExcludes>
+    <GeneratePackageOnBuild>true</GeneratePackageOnBuild>
+    <EnableDefaultItems>false</EnableDefaultItems>
+    <NoWarn>$(NoWarn);NU5128</NoWarn>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <Content
+      Include="templates\**\*"
+      Exclude="templates\**\bin\**;templates\**\obj\**;templates\**\.idea\**;templates\**\*.feature.cs;templates\**\spec.json;templates\**\TestResults\**;templates\**\StrykerOutput\**;templates\**\coverage\**;templates\**\node_modules\**;templates\**\package-lock.json;templates\**\.DS_Store"
+    />
+    <Compile Remove="**\*" />
+  </ItemGroup>
+</Project>

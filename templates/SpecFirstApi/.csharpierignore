@@ -1,0 +1,3 @@
+**/Migrations/**
+**/*.feature.cs
+node_modules/

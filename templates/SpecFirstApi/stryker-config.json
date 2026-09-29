@@ -1,0 +1,18 @@
+{
+  "stryker-config": {
+    "project": "SpecFirst.Service.Api.csproj",
+    "test-projects": [
+      "tests/SpecFirst.Service.Tests.Spec/SpecFirst.Service.Tests.Spec.csproj",
+      "tests/SpecFirst.Service.Tests.Unit/SpecFirst.Service.Tests.Unit.csproj"
+    ],
+    "mutate": [
+      "**/*.cs",
+      "!**/Migrations/**",
+      "!**/Program.cs",
+      "!**/*Setup.cs",
+      "!**/DesignTimeDbContextFactory.cs"
+    ],
+    "reporters": ["html", "markdown", "progress"],
+    "thresholds": { "high": 80, "low": 60, "break": 60 }
+  }
+}

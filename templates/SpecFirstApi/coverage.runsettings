@@ -1,0 +1,16 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Coverage is about our code: generated code (Reqnroll code-behind, OpenAPI XML support), EF migrations and the
+     composition root (Program.cs, the *Setup files, the design-time factory) are excluded, the same files Stryker
+     leaves alone. CI fails below the line-coverage threshold in ci.yml. -->
+<RunSettings>
+  <DataCollectionRunSettings>
+    <DataCollectors>
+      <DataCollector friendlyName="XPlat code coverage">
+        <Configuration>
+          <ExcludeByAttribute>GeneratedCodeAttribute</ExcludeByAttribute>
+          <ExcludeByFile>**/Migrations/*.cs,**/Program.cs,**/*Setup.cs,**/DesignTimeDbContextFactory.cs</ExcludeByFile>
+        </Configuration>
+      </DataCollector>
+    </DataCollectors>
+  </DataCollectionRunSettings>
+</RunSettings>

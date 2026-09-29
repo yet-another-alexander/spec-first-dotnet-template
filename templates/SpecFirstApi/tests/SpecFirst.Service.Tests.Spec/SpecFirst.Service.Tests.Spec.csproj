@@ -1,0 +1,40 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <!-- The specification tests: acceptance (Reqnroll, REQ over HTTP), integration (xUnit, TECH and the schema drift
+       check), invariants (CsCheck property tests), plus the traceability and architecture guardrails. This project is a protected
+       path: it changes in spec PRs only. -->
+  <PropertyGroup>
+    <IsPackable>false</IsPackable>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <PackageReference Include="coverlet.collector" />
+    <PackageReference Include="CsCheck" />
+    <PackageReference Include="Microsoft.AspNetCore.Mvc.Testing" />
+    <PackageReference Include="Microsoft.NET.Test.Sdk" />
+    <PackageReference Include="NJsonSchema" />
+    <PackageReference Include="Reqnroll.xUnit" />
+    <PackageReference Include="Shouldly" />
+    <PackageReference Include="Testcontainers.PostgreSql" />
+    <PackageReference Include="Testcontainers.RabbitMq" />
+    <PackageReference Include="xunit" />
+    <PackageReference Include="xunit.runner.visualstudio" />
+    <PackageReference Include="YamlDotNet" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Using Include="Shouldly" />
+    <Using Include="Xunit" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\..\src\SpecFirst.Service.Api\SpecFirst.Service.Api.csproj" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <!-- The guardrail tests read docs/specs and the test sources from the repository root. -->
+    <AssemblyMetadata
+      Include="RepoRoot"
+      Value="$([MSBuild]::NormalizeDirectory('$(MSBuildProjectDirectory)', '..', '..'))"
+    />
+  </ItemGroup>
+</Project>

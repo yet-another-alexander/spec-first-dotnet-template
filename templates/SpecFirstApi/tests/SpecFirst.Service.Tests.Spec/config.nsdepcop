@@ -1,0 +1,7 @@
+<NsDepCopConfig InheritanceDepth="2">
+  <!-- Tests may use any namespace; the solution assemblies they reach for are listed. -->
+  <Allowed From="*" To="*" />
+  <AllowedAssembly From="SpecFirst.Service.Tests.Spec" To="SpecFirst.Service.Api" />
+  <AllowedAssembly From="SpecFirst.Service.Tests.Spec" To="SpecFirst.Service.Models" />
+  <AllowedAssembly From="SpecFirst.Service.Tests.Spec" To="SpecFirst.Service.Messages" />
+</NsDepCopConfig>

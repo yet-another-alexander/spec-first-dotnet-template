@@ -1,0 +1,12 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <!-- The asynchronous contract: the records the service publishes (Events/) or consumes (Commands/), each with its
+       topic. BCL plus the Models project for shared enums; docs/specs/messages/asyncapi.yaml is the contract of record. -->
+  <PropertyGroup>
+    <Description>Messages published and consumed by SpecFirst.Service.</Description>
+    <GeneratePackageOnBuild>true</GeneratePackageOnBuild>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\SpecFirst.Service.Models\SpecFirst.Service.Models.csproj" />
+  </ItemGroup>
+</Project>

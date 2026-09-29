@@ -1,0 +1,227 @@
+# Lints the contracts: npm install && npm run lint:contracts (Spectral is pinned in package.json)
+
+extends:
+  - [spectral:oas, recommended]
+  - [spectral:asyncapi, recommended]
+
+formats:
+  - oas3_0
+  - oas3_1
+  - aas3
+
+aliases:
+  Operation:
+    - "$.paths[*][get,put,post,delete,patch,options,head,trace]"
+  ErrorResponse:
+    - "$.paths[*][*].responses[?(@property.match(/^[45]/))]"
+
+rules:
+  operation-operationId: error
+  operation-operationId-unique: error
+  operation-tags: error
+  operation-tag-defined: error
+  operation-success-response: error
+  operation-description: warn
+  no-$ref-siblings: error
+  info-contact: error
+  info-description: error
+  info-license: error
+  # Servers are deployment, not contract; the generated document has none either.
+  oas3-api-servers: off
+  asyncapi-servers: off
+  # Contact is name and url, the same as for the API contract.
+  asyncapi-info-contact-properties: off
+
+  # Operations
+
+  operation-operationId-camel-case:
+    description: operationId must be camelCase (e.g. getOrder)
+    severity: error
+    given: "#Operation"
+    then:
+      field: operationId
+      function: pattern
+      functionOptions:
+        match: "^[a-z][a-zA-Z0-9]*$"
+
+  operation-summary-required:
+    description: Every operation needs a summary
+    severity: error
+    given: "#Operation"
+    then:
+      field: summary
+      function: truthy
+
+  # Errors are RFC 9457 problem details
+
+  error-response-problem-details:
+    description: 4xx/5xx responses must use application/problem+json
+    severity: error
+    given: "#ErrorResponse.content"
+    then:
+      field: "application/problem+json"
+      function: truthy
+
+  error-response-refs-schema:
+    description: Error responses must $ref a ProblemDetails schema, not inline one
+    severity: error
+    resolved: false
+    given: "#ErrorResponse.content[application/problem+json].schema"
+    then:
+      field: "$ref"
+      function: truthy
+
+  # Responses
+
+  response-2xx-has-content:
+    description: Successful responses (except 204) must declare content
+    severity: error
+    given: "#Operation.responses[?(@property.match(/^2/) && @property !== '204')]"
+    then:
+      field: content
+      function: truthy
+
+  response-204-no-content:
+    description: 204 responses must not declare content
+    severity: error
+    given: "#Operation.responses['204']"
+    then:
+      field: content
+      function: falsy
+
+  # Bodies reference named schemas
+
+  request-body-must-ref:
+    description: Request bodies must $ref a named schema, not inline an object
+    severity: error
+    resolved: false
+    given: "$.paths[*][*].requestBody.content[*].schema"
+    then:
+      function: schema
+      functionOptions:
+        schema:
+          anyOf:
+            - required: ["$ref"]
+            - properties: { type: { enum: [array] } }
+              required: [type, items]
+
+  response-body-must-ref:
+    description: Response bodies must $ref a named schema, not inline an object
+    severity: error
+    resolved: false
+    given: "$.paths[*][*].responses[*].content[*].schema"
+    then:
+      function: schema
+      functionOptions:
+        schema:
+          anyOf:
+            - required: ["$ref"]
+            - properties: { type: { enum: [array] } }
+              required: [type, items]
+
+  # Schemas
+
+  schema-property-description:
+    description: Schema properties must have a description
+    severity: warn
+    given: "$.components.schemas[*].properties[*]"
+    then:
+      field: description
+      function: truthy
+
+  schema-property-camel-case:
+    description: Property names must be camelCase (the System.Text.Json default)
+    severity: error
+    given: "$.components.schemas[*].properties"
+    then:
+      field: "@key"
+      function: pattern
+      functionOptions:
+        match: "^[a-z][a-zA-Z0-9]*$"
+
+  schema-name-pascal-case:
+    description: Schema names must be PascalCase with no namespace leaking in
+    severity: error
+    given: "$.components.schemas"
+    then:
+      field: "@key"
+      function: pattern
+      functionOptions:
+        match: "^[A-Z][a-zA-Z0-9]*$"
+
+  integer-format-required:
+    description: Integer types must declare a format (int32 or int64)
+    severity: error
+    given: "$..[?(@.type=='integer')]"
+    then:
+      function: schema
+      functionOptions:
+        schema:
+          type: object
+          required: [format]
+          properties:
+            format:
+              enum: [int32, int64]
+
+  enum-must-be-string:
+    description: Enums are strings, never integers; integer enums leak ordinal positions into the contract
+    severity: error
+    given: "$..[?(@.enum)]"
+    then:
+      function: schema
+      functionOptions:
+        schema:
+          type: object
+          required: [type]
+          properties:
+            type:
+              const: string
+
+  enum-values-lower-case:
+    description: Enum values are lower-case snake_case, the wire vocabulary of this API
+    severity: warn
+    given: "$..[?(@.enum && @.type=='string')].enum[*]"
+    then:
+      function: pattern
+      functionOptions:
+        match: "^[a-z0-9]+(_[a-z0-9]+)*$"
+
+  # Paths
+
+  path-kebab-case:
+    description: Paths must be kebab-case
+    severity: error
+    given: "$.paths"
+    then:
+      field: "@key"
+      function: pattern
+      functionOptions:
+        match: "^(\\/([a-z0-9]+(-[a-z0-9]+)*|\\{[a-zA-Z0-9]+\\}))+$"
+
+  path-version-prefix:
+    description: All paths must start with /v{n}/
+    severity: error
+    given: "$.paths"
+    then:
+      field: "@key"
+      function: pattern
+      functionOptions:
+        match: "^\\/v[0-9]+\\/"
+
+  path-parameters-have-description:
+    description: Path parameters must have descriptions
+    severity: error
+    given: "$.paths[*][*].parameters[?(@.in=='path')]"
+    then:
+      field: description
+      function: truthy
+
+  # Tags
+
+  tag-description-required:
+    description: Every declared tag must have a description
+    severity: warn
+    given: "$.tags[*]"
+    then:
+      field: description
+      function: truthy

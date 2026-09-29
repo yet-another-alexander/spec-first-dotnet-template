@@ -1,0 +1,39 @@
+<NsDepCopConfig InheritanceDepth="2">
+  <!-- Inherits the solution rules from /config.nsdepcop. The service takes the two contract projects, nothing else
+       from the solution. -->
+  <AllowedAssembly From="SpecFirst.Service.Api" To="SpecFirst.Service.Models" />
+  <AllowedAssembly From="SpecFirst.Service.Api" To="SpecFirst.Service.Messages" />
+
+  <!-- Features use the framework, the contracts and the persistence boundary, never the composition root. -->
+  <Allowed From="SpecFirst.Service.Api.Orders" To="System" />
+  <Allowed From="SpecFirst.Service.Api.Orders" To="System.*" />
+  <Allowed From="SpecFirst.Service.Api.Orders" To="Microsoft.AspNetCore.*" />
+  <Allowed From="SpecFirst.Service.Api.Orders" To="Microsoft.EntityFrameworkCore" />
+  <Allowed From="SpecFirst.Service.Api.Orders" To="Microsoft.EntityFrameworkCore.*" />
+  <Allowed From="SpecFirst.Service.Api.Orders" To="SpecFirst.Service.Models.*" />
+  <Allowed From="SpecFirst.Service.Api.Orders" To="SpecFirst.Service.Messages" />
+  <Allowed From="SpecFirst.Service.Api.Orders" To="SpecFirst.Service.Messages.*" />
+  <Allowed From="SpecFirst.Service.Api.Orders" To="DotNetCore.CAP" />
+  <Allowed From="SpecFirst.Service.Api.Orders" To="DotNetCore.CAP.*" />
+  <Allowed From="SpecFirst.Service.Api.Orders" To="SpecFirst.Service.Api.Persistence" />
+  <Allowed From="SpecFirst.Service.Api.Orders" To="Stateless" />
+
+  <!-- Persistence maps the entities and knows nothing about HTTP or telemetry. -->
+  <Allowed From="SpecFirst.Service.Api.Persistence" To="System" />
+  <Allowed From="SpecFirst.Service.Api.Persistence" To="System.*" />
+  <Allowed From="SpecFirst.Service.Api.Persistence" To="Microsoft.EntityFrameworkCore" />
+  <Allowed From="SpecFirst.Service.Api.Persistence" To="Microsoft.EntityFrameworkCore.*" />
+  <Allowed From="SpecFirst.Service.Api.Persistence" To="SpecFirst.Service.Api.Orders" />
+
+  <!-- Generated migrations. -->
+  <Allowed From="SpecFirst.Service.Api.Persistence.Migrations" To="System" />
+  <Allowed From="SpecFirst.Service.Api.Persistence.Migrations" To="System.*" />
+  <Allowed From="SpecFirst.Service.Api.Persistence.Migrations" To="Microsoft.EntityFrameworkCore" />
+  <Allowed From="SpecFirst.Service.Api.Persistence.Migrations" To="Microsoft.EntityFrameworkCore.*" />
+  <Allowed From="SpecFirst.Service.Api.Persistence.Migrations" To="Npgsql.*" />
+  <Allowed From="SpecFirst.Service.Api.Persistence.Migrations" To="SpecFirst.Service.Api.Persistence" />
+
+  <!-- The composition root (Program.cs and the *Setup files) wires everything together. -->
+  <Allowed From="SpecFirst.Service.Api" To="*" />
+  <Allowed From="." To="*" />
+</NsDepCopConfig>

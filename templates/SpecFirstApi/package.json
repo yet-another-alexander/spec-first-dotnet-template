@@ -1,0 +1,14 @@
+{
+  "name": "specfirst-service-contract-lint",
+  "private": true,
+  "description": "Lints the API and message contracts with Spectral (docs/workflow.md section 8). CI runs the same script.",
+  "scripts": {
+    "lint:contracts": "spectral lint docs/specs/api/openapi.yaml docs/specs/messages/asyncapi.yaml"
+  },
+  "devDependencies": {
+    "@stoplight/spectral-cli": "6.16.0"
+  },
+  "overrides": {
+    "@asyncapi/specs": "6.11.1"
+  }
+}
