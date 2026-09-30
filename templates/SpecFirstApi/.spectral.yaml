@@ -1,5 +1,3 @@
-# Lints the contracts: npm install && npm run lint:contracts (Spectral is pinned in package.json)
-
 extends:
   - [spectral:oas, recommended]
   - [spectral:asyncapi, recommended]
@@ -26,10 +24,8 @@ rules:
   info-contact: error
   info-description: error
   info-license: error
-  # Servers are deployment, not contract; the generated document has none either.
   oas3-api-servers: off
   asyncapi-servers: off
-  # Contact is name and url, the same as for the API contract.
   asyncapi-info-contact-properties: off
 
   # Operations

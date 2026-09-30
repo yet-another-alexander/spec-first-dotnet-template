@@ -1,4 +1,3 @@
-# The specification and the tests that prove it are reviewed by the spec owners, never self-merged.
 /docs/specs/                               @your-org/spec-owners
 /tests/SpecFirst.Service.Tests.Spec/       @your-org/spec-owners
 /.github/                                  @your-org/maintainers

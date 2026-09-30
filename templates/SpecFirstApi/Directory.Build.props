@@ -9,7 +9,6 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <!-- Forbidden APIs for every project; Microsoft.CodeAnalysis.BannedApiAnalyzers reads this file. -->
     <AdditionalFiles
       Include="$(MSBuildThisFileDirectory)BannedSymbols.txt"
       Link="BannedSymbols.txt"

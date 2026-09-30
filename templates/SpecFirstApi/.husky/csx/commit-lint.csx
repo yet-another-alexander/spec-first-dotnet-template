@@ -1,8 +1,6 @@
 using System.IO;
 using System.Text.RegularExpressions;
 
-// Conventional Commits: type(scope)!: subject. The `spec` type marks specification changes.
-// Add a ticket id to the subject if your tracker wants one; the linter does not require it.
 var lines = File.ReadAllLines(Args[0]);
 var subject = lines.Length > 0 ? lines[0] : string.Empty;
 

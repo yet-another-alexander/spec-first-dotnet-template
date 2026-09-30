@@ -1,6 +1,4 @@
 <Project>
-  <!-- Installs the git hooks on first restore. Guarded on .git so it only runs from a real repository root,
-       never from a docker build context or the template pack. -->
   <Target
     Name="HuskyInstall"
     BeforeTargets="Restore;CollectPackageReferences"

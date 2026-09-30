@@ -1,8 +1,5 @@
 name: Stale work in progress
 
-# A spec element may stay ahead of the code only while its requirement is work in progress. This job lists every
-# wip marker in the spec tests with the age of the commit that added it and fails when one is older than the limit,
-# so a spec nobody implemented does not stay open forever.
 on:
   schedule:
     - cron: "0 6 * * *"
