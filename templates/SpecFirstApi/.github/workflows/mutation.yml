@@ -1,12 +1,12 @@
 name: Mutation testing
 
-# Mutation testing catches tests that pass without asserting. Both test projects drive it, so the acceptance and
-# technical tests count, which needs Docker for the Postgres container. It is slow, so it runs weekly and on demand.
-# The run fails below thresholds.break in stryker-config.json; raise it as the domain grows.
 on:
   schedule:
     - cron: "0 6 * * 1"
   workflow_dispatch:
+
+env:
+  HUSKY: 0
 
 jobs:
   stryker:

@@ -5,7 +5,6 @@ on:
     branches: [main]
   pull_request:
 
-# A new push to a PR cancels the run it obsoleted; main runs are never cancelled.
 concurrency:
   group: ${{ github.workflow }}-${{ github.ref }}
   cancel-in-progress: ${{ github.event_name == 'pull_request' }}
@@ -13,6 +12,7 @@ concurrency:
 env:
   DOTNET_NOLOGO: "true"
   DOTNET_CLI_TELEMETRY_OPTOUT: "true"
+  HUSKY: 0
 
 jobs:
   format:
@@ -28,7 +28,6 @@ jobs:
 
   protected-paths:
     name: Protected paths
-    # Spec PRs carry the label; everything else is an implementation PR.
     if: github.event_name == 'pull_request' && !contains(github.event.pull_request.labels.*.name, 'spec')
     runs-on: ubuntu-latest
     steps:
@@ -36,9 +35,6 @@ jobs:
         with:
           fetch-depth: 0
       - name: Only wip markers may disappear from the spec and the spec tests
-        # An implementation PR may remove a line that is exactly `@wip` (feature file) or the
-        # `[Trait("Category", "wip")]` line of a fact, and nothing else. In particular it may not add a wip marker,
-        # which would hide a covered test from the run.
         run: |
           diff=$(git diff "origin/${{ github.base_ref }}...HEAD" -- docs/specs tests/SpecFirst.Service.Tests.Spec)
           added=$(printf '%s\n' "$diff" | grep -E '^\+' | grep -vE '^\+\+\+ ' || true)
@@ -64,23 +60,11 @@ jobs:
         run: dotnet build src/SpecFirst.Service.Api -c Release
 
       - name: Lint the API and message contracts
-        # package.json pins Spectral and overrides @asyncapi/specs, which spectral-rulesets pulls in through an
-        # unpinned range and which had a malicious release in 2026. The same command runs locally.
         run: |
           npm install
           npm run lint:contracts
 
       - name: Everything the code exposes is declared in the API contract
-        # oasdiff breaking BASE REVISION reports what a client of BASE would lose in REVISION. With the generated
-        # document as BASE and the contract as REVISION, an endpoint, parameter or property that exists in code but not
-        # in the contract is a removal and fails. The other direction, contract ahead of code, is pending work and passes.
-        # oasdiff rates changes by what they break for a client, which is not quite the one-way element check we want, so
-        # .oasdiff-severity.txt (one "check-id level" per line, no comments allowed) adjusts it: request-side checks
-        # that fire when the contract is stricter than the code (a tightened bound, a new required property) are
-        # demoted to info, because contract ahead of code is pending work; removals that oasdiff rates informational
-        # (an enum value, an error status code, an operation id, an optional response property present in code but not
-        # in the contract) are promoted to error, because code ahead of contract is drift. The image is pinned so the
-        # list of check ids stays valid; regenerate the file when bumping it (see docs/workflow.md section 5).
         run: |
           docker run --rm -v "$PWD:/work:ro" tufin/oasdiff:v1.32.1 breaking \
             /work/spec.json /work/docs/specs/api/openapi.yaml \
@@ -108,7 +92,6 @@ jobs:
           --results-directory ./coverage
 
       - name: Work-in-progress tests that already pass
-        # A passing wip test means its @wip line can go in the implementation PR. Informational only.
         run: >
           dotnet test --no-build -c Release --filter "Category=wip" --logger "console;verbosity=normal" 2>&1
           | grep -E "^[[:space:]]+Passed " || true
@@ -124,7 +107,6 @@ jobs:
           cat coverage/report/Summary.txt
 
       - name: Coverage gate
-        # Line coverage of the merged report over both test projects; coverage.runsettings says what is measured.
         env:
           MIN_LINE_COVERAGE: 90
         run: |
@@ -150,12 +132,10 @@ jobs:
       - uses: gitleaks/gitleaks-action@v2
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-          # Organisation repositories need a (free) license key: https://gitleaks.io
           GITLEAKS_LICENSE: ${{ secrets.GITLEAKS_LICENSE }}
 
   docker:
     name: Container
-    # The push trigger only fires for main.
     if: github.event_name == 'push'
     needs: [format, contracts, tests]
     runs-on: ubuntu-latest
@@ -196,7 +176,6 @@ jobs:
           cache-to: type=gha,mode=max
 
       - name: Smoke test
-        # TECH-004: the image starts, migrates, connects to the broker, answers /health and accepts an order.
         run: |
           docker run -d --name api --network host \
             -e ConnectionStrings__Postgres="Host=localhost;Database=specfirst-service;Username=postgres;Password=postgres" \
